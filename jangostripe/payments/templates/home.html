@@ -1,0 +1,41 @@
+<h2>Buy for Rs</h2>
+  <form action="{% url 'charge' %}" method="post" id="payment-form">
+   {% csrf_token %}
+     <label for="card-element">Credit or debit card</label>
+     <div id="card-element"></div>
+     <div id="card-errors" role="alert"></div>
+     <button>Submit Payment</button>
+  </form>
+<script src="https://js.stripe.com/v3/"></script>
+<script>
+    var stripe = Stripe('pk_test_sIlFbL8qRA9kbZ9BZVr9984z00ewR5qlz5');
+
+    var elements = stripe.elements();
+    var card =  elements.create('card');
+    card.mount('#card-element');
+
+    var form = document.getElementById('payment-form');
+    form.addEventListener('submit', function(event) {
+    event.preventDefault();
+
+    stripe.createToken(card).then(function(result) {
+      if (result.error) {
+
+         var errorElement = document.getElementById('card-errors');
+         errorElement.textContent = result.error.message;
+      } else {
+      stripeTokenHandler(result.token);
+    }
+  });
+});
+function stripeTokenHandler(token) {
+
+  var form = document.getElementById('payment-form');
+  var hiddenInput = document.createElement('input');
+  hiddenInput.setAttribute('type', 'hidden');
+  hiddenInput.setAttribute('name', 'stripeToken');
+  hiddenInput.setAttribute('value', token.id);
+  form.appendChild(hiddenInput);
+  form.submit();
+}
+</script>
